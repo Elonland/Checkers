@@ -1,5 +1,11 @@
 package com.tp.Model;
-
+/**
+ * 
+ * @author Tobiasz Jędrzejek
+ * 
+ * Specific type of board with pieces on it.
+ *
+ */
 public class PolishBoard extends Board {
 
 	public PolishBoard(){

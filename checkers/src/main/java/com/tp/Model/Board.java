@@ -2,6 +2,12 @@ package com.tp.Model;
 
 import java.util.ArrayList;
 
+/**
+ * 
+ * @author Tobiasz Jędrzejek
+ *
+ *Board for the checkers it contains all the pieces.
+ */
 public class Board {
 
 	private ArrayList<Piece> pieces = new ArrayList<Piece>();
@@ -57,5 +63,10 @@ public class Board {
         }
         return count;
     }
+
+	public int getSize() {
+		// TODO Auto-generated method stub
+		return 10;
+	}
 
 }

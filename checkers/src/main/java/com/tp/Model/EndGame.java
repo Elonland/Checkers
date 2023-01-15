@@ -1,5 +1,12 @@
 package com.tp.Model;
 
+/**
+ * 
+ * @author Tobiasz Jędrzejek
+ * 
+ * One of the states in game.
+ *
+ */
 public class EndGame implements IGameState {
 	
 	Checkers checkers;

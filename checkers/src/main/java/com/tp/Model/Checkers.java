@@ -1,5 +1,12 @@
 package com.tp.Model;
 
+/**
+ * 
+ * @author Tobiasz Jędrzejek
+ *
+ *Contains board and states. It processes moves.
+ *It is a place where everything happens.
+ */
 public class Checkers {
 	
 	private Board board;
@@ -8,7 +15,7 @@ public class Checkers {
 	
 	private static Checkers instance;
 	
-	private Checkers(ICheckersFactory factory) {
+	public Checkers(ICheckersFactory factory) {
 		board = factory.createBoard();
 		state = factory.createState();
 	}

@@ -1,5 +1,12 @@
 package com.tp.Model;
 
+/**
+ * 
+ * @author Tobiasz Jędrzejek
+ * 
+ * Specific state in the game.
+ *
+ */
 public class WhiteTurn implements IGameState{
 
 	Checkers checkers;

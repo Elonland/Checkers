@@ -1,5 +1,10 @@
 package com.tp.Model;
-
+/**
+ * 
+ * @author Tobiasz Jędrzejek
+ *
+ * One of game states.
+ */
 public class BlackTurn implements IGameState {
 
 	private Checkers checkers;
