@@ -94,7 +94,7 @@ class Game {
             }
         }
 
-        private void setup() throws IOException {
+        public void setup() throws IOException {
         	inputStream = socket.getInputStream();
             //input = new Scanner(socket.getInputStream());
         	dataInputStream = new DataInputStream(inputStream);
@@ -224,7 +224,7 @@ class Game {
          * Using a wrapper for JsonObject because it isn't serializable.
          * Method used to deduce what type of checkers player wants to play.
          */
-        private void setUpCheckers() {
+        public void setUpCheckers() {
         	
         	String Sfactory = null;
 			try {
