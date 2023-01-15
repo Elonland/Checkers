@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,37 +23,20 @@ import javax.json.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+
+import com.tp.Controller.Server;
 /*
  * Class used to test server's communication with client via JsonObjects.
  */
 public class ServerTest {
 	
-	JsonObject obj;
-	JsonObject factory;
+	String obj;
+	String factory;
 	@Before
 	public void setup() {
-		obj = Json.createObjectBuilder()
-			      .add("old", Json.createObjectBuilder()
-			      	.add("x", 2)
-			      	.add("y", 2)
-			      	.add("isQueen", false))
-			      .add("new", Json.createObjectBuilder()
-			        .add("x", 3)
-			        .add("y", 3)
-			        .add("isQueen", false))
-			      .add("isJump", false)
-			      .add("jumped", Json.createArrayBuilder()
-			        .add(Json.createObjectBuilder()
-			          .add("x", 4)
-			          .add("y", 4)
-			          .add("isQueen", false))
-			        .add(Json.createObjectBuilder()
-			          .add("x", 6)
-			          .add("y", 6)
-			          .add("isQueen", false)))
-			        .build();
-		
-		factory = Json.createObjectBuilder().add("Factory", "polishCheckers").build();
+		 //old x    y  new x     y      queen    isJump jumped[]
+		obj = "2" + "2" + "3" + "3" + "false" + "false" +  "4" + "4" + "false" + "6" + "6" + "false"; 
+		factory = "polishCheckers";
 	}
 	
 	/*
@@ -89,22 +73,11 @@ public class ServerTest {
 	    return socket.accept();
 	}
 	
-	@Mock
 	Socket clientSocket;
 	
-	@Mock
-	InputStream inputStream;
+	Scanner inputStream;
 	
-	@Mock
-	OutputStream outputStream;
-	
-	@Mock
-	ObjectInputStream objInputStream;
-	
-	@Mock
-	ObjectOutputStream objOutputStream;
-	
-	JsonWrapper wrapper = new JsonWrapper();
+	PrintWriter outputStream;
 	
 	public static Scanner createSocketReader(Socket socket) throws IOException {
 		return new Scanner(new InputStreamReader(socket.getInputStream()));
@@ -131,35 +104,7 @@ public class ServerTest {
 	public static void writeToOutputStream(PrintWriter output, String data) {
 	    output.println(data);
 	}
-	
-	/**
-	 * 
-	 * @param input read from Object input stream.
-	 * @return Read sent object.
-	 */
-	public static JsonWrapper readFromObjectInputStream(ObjectInputStream input) {
-		try {
-			return JsonSerDe.deserialize(input);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-	/**
-	 * 
-	 * @param output send object to server.
-	 * @param data object desired to send.
-	 */
-	public static void writeToObjectOutputStream(ObjectOutputStream output, JsonWrapper wrapper) {
-		try {
-			JsonSerDe.serialize(wrapper, output);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
+		
 	@Test
 	public void testServerResponse() {
 		//Server server = new Server();
@@ -172,27 +117,26 @@ public class ServerTest {
 				e1.printStackTrace();
 			}
 			Socket socket = new Socket("127.0.0.1" ,58901);
-			objInputStream = new ObjectInputStream(socket.getInputStream());
-			objOutputStream = new ObjectOutputStream(socket.getOutputStream());
-			wrapper.setJsonObject(factory, "Factory");
-			try {
-				JsonSerDe.serialize(wrapper, objOutputStream);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			inputStream = new Scanner(socket.getInputStream());
+			//outputStream = new PrintWriter(socket.getOutputStream());
+			OutputStream outputStream = socket.getOutputStream();
 			
-			wrapper.setJsonObject(obj, "Move");
-			writeToObjectOutputStream(objOutputStream, wrapper);
+			DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 			
+			dataOutputStream.writeUTF(factory);
+			dataOutputStream.flush();
+			dataOutputStream.writeUTF(obj);
+			
+			//outputStream.write(factory);
+			//outputStream.write(obj);
 			//Read error message.
-			JsonObject objRead;
-			wrapper = readFromObjectInputStream(objInputStream);
-			objRead = wrapper.getJsonObject();
 			
-			System.out.println(objRead.getString("error"));
-			assertNotNull(objRead);
+			String out = inputStream.nextLine();
 			
+			System.out.println(out);
+			assertNotNull(out);
+			
+			dataOutputStream.close();
 			socket.close();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
