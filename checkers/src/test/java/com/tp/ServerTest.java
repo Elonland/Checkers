@@ -5,6 +5,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -35,7 +38,7 @@ public class ServerTest {
 	@Before
 	public void setup() {
 		 //old x    y  new x     y      queen    isJump jumped[]
-		obj = "2" + "2" + "3" + "3" + "false" + "false" +  "4" + "4" + "false" + "6" + "6" + "false"; 
+		obj = "2 " + "2 " + "3 " + "3 " + "false " + "true " +  "4 " + "4 " + "false " + "6 " + "6 " + "false"; 
 		factory = "polishCheckers";
 	}
 	
@@ -77,7 +80,9 @@ public class ServerTest {
 	
 	Scanner inputStream;
 	
-	PrintWriter outputStream;
+	BufferedReader reader;
+	
+	PrintWriter write;
 	
 	public static Scanner createSocketReader(Socket socket) throws IOException {
 		return new Scanner(new InputStreamReader(socket.getInputStream()));
@@ -106,9 +111,10 @@ public class ServerTest {
 	}
 		
 	@Test
-	public void testServerResponse() {
+	public void testServerResponse() throws UnknownHostException, IOException {
 		//Server server = new Server();
 		setup();
+		/*
 		try {
 			try {
 				Server.main(null);
@@ -116,36 +122,56 @@ public class ServerTest {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			*/
 			Socket socket = new Socket("127.0.0.1" ,58901);
 			inputStream = new Scanner(socket.getInputStream());
+			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			//outputStream = new PrintWriter(socket.getOutputStream());
-			OutputStream outputStream = socket.getOutputStream();
+			write = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())));
 			
-			DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+			//Socket socket2 = new Socket("127.0.0.1", 58901);
 			
-			dataOutputStream.writeUTF(factory);
-			dataOutputStream.flush();
-			dataOutputStream.writeUTF(obj);
+			//write.write(factory);
+			//write.flush();
 			
-			//outputStream.write(factory);
-			//outputStream.write(obj);
+			System.out.println("Factory Written");
+			
+			//WELCOME 1
+			String signal = reader.readLine();
+			System.out.println(signal);
+			
+			write.println(factory);
+			write.flush();
+			
+			System.out.println("Factory Written");
+			
+			signal = reader.readLine();
+			System.out.println("Read signal " + signal);
+			
+			//board size and "waiting for opponent message"
+			//signal = reader.readLine();
+			//System.out.println(signal);
+			//signal = reader.readLine();
+			//System.out.println(signal);
+			
+			
+			
+			System.out.println("Writing to Server");
+			write.write(obj);
+			write.flush();
+			
+			
+			
+			System.out.println("Waiting for response");
 			//Read error message.
-			
-			String out = inputStream.nextLine();
-			
+			String out = reader.readLine();
 			System.out.println(out);
+			
 			assertNotNull(out);
 			
-			dataOutputStream.close();
+			write.close();
+			//dataOutputStream.close();
 			socket.close();
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 	
-
-}

@@ -10,13 +10,14 @@ package com.tp.Model;
 public class PolishCheckersFactory implements ICheckersFactory {
 
 	Checkers checkers;
-	
+	Board board;
 	//Board board;
 	IGameState state;
 	@Override
 	public Board createBoard() {
 		
-		return new PolishBoard();
+		board = new PolishBoard();
+		return board;
 	}
 
 	@Override

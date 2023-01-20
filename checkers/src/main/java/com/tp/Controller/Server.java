@@ -1,18 +1,23 @@
 package com.tp.Controller;
 
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 /**
  * Class responsible for establishing connection, and handling requests from clients, the C in MVC.
  */
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.json.Json;
@@ -29,11 +34,11 @@ import com.tp.Model.Piece;
 import com.tp.Model.PolishCheckersFactory;
 
 public class Server {
-
+	
     public static void main(String[] args) throws Exception {
-        try (var listener = createServerSocket(58901)) {
+        try (ServerSocket listener = createServerSocket(58901)) {
             System.out.println("Checkers server is running...");
-            var pool = Executors.newFixedThreadPool(200);
+            var pool = Executors.newFixedThreadPool(2);
             while (true) {
                 Game game = new Game();
                 //System.out.println("Game Created");
@@ -47,14 +52,15 @@ public class Server {
     public static ServerSocket createServerSocket(int port) throws IOException {
     	return new ServerSocket(port);
     }
+  
 }
 
 class Game {
 
 	ICheckersFactory factory;
     Checkers checkers;
-    Board board;
-
+    Board board = null;
+    
     Player currentPlayer;
 
     class Player implements Runnable {
@@ -67,7 +73,9 @@ class Game {
         DataInputStream dataInputStream;
         PrintWriter output;
         Move move;
-       
+        Boolean readyRead = true;
+        
+    	BufferedReader reader;
 
         public Player(Socket socket, char mark) {
             this.socket = socket;
@@ -77,9 +85,11 @@ class Game {
         @Override
         public void run() {
             try {
+            	System.out.println("Player is running\n");	
                 setup();
                 //processCommands();
                 processMoves();
+                output.println("We are done here");
                 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -95,25 +105,28 @@ class Game {
         }
 
         public void setup() throws IOException {
-        	inputStream = socket.getInputStream();
+        	System.out.println("Setup is running\n");	
+        	//inputStream = socket.getInputStream();
             //input = new Scanner(socket.getInputStream());
-        	dataInputStream = new DataInputStream(inputStream);
-            output = new PrintWriter(socket.getOutputStream(), true);
+        	//dataInputStream = new DataInputStream(inputStream);
+            output = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             
             output.println("WELCOME " + mark);
             
             //Only one player needs to implement checkers.
-            if(mark == '1' || true) {
+            if(mark == '1') {
+            	System.out.println("Setting up checkers");
             	setUpCheckers();
             }
             
             //Sending to client board size
-           output.println("SIZE " + getBoardSize());
+           //output.println("SIZE " + getBoardSize());
             
             
             if (mark == '1') {
                 currentPlayer = this;
-                output.println("MESSAGE Waiting for opponent to connect");
+                System.out.println("MESSAGE Waiting for opponent to connect");
             } else {
                 opponent = currentPlayer;
                 opponent.opponent = this;
@@ -133,6 +146,8 @@ class Game {
             }
         }
         */
+        
+        
         /**
          * Read JsonObject from input to process changes.
          * Create move object for checkers to process changes.
@@ -147,12 +162,20 @@ class Game {
 
 				String coordinates = null;
 				try {
-					coordinates = dataInputStream.readUTF();
+
+					coordinates = reader.readLine();
+
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}//input.nextLine();
 				String[] moves = coordinates.split(" ");
+				
+				//See what is inside
+				for(int i = 0; i < moves.length; i++) {
+					System.out.println(moves[i]);	
+				}
+				//System.out.println(moves.length);
 				
 				int xOld = Integer.parseInt(moves[0]);
 				int yOld = Integer.parseInt(moves[1]);
@@ -184,16 +207,26 @@ class Game {
 					i++;
 				}
 				*/
-				Piece captured[] = new Piece[(moves.length - 5) / 2];
-				int j = 0;
-				for(int i = 5; i < moves.length; i += 2) {
+				
+				//If sth was captured create an array of these pieces
+				Piece[] captured = null;
+				boolean isJump = Boolean.parseBoolean(moves[5]);
+				if(isJump == true) {
+					captured = new Piece[(moves.length - 8) / 2];
+					int j = 0;
+					for(int i = 6; i < moves.length; i += 3) {
 					
-					int x = Integer.parseInt(moves[i]);
-					int y = Integer.parseInt(moves[i+1]);
-					captured[j] = board.getPiece(x, y);
+						int x = Integer.parseInt(moves[i]);
+						int y = Integer.parseInt(moves[i+1]);
+						
+						//currently it isn't used anywhere
+						boolean queen = Boolean.parseBoolean(moves[i+2]);
+						captured[j] = board.getPiece(x, y);
 					
-					j++;
+						j++;
 					
+					}
+				
 				}
 				
 				move = new Move(oldPiece, newPiece, isQueen, captured);
@@ -218,6 +251,7 @@ class Game {
         }
         
         private int getBoardSize() {
+        	System.out.println("Get that board.\n");
         	return board.getSize();
         }
         /*
@@ -225,20 +259,33 @@ class Game {
          * Method used to deduce what type of checkers player wants to play.
          */
         public void setUpCheckers() {
-        	
+        	System.out.println("Preparing checkers\n");	
         	String Sfactory = null;
 			try {
-				Sfactory = dataInputStream.readUTF();
+				Sfactory = reader.readLine();
+				output.println("READY");
+				output.flush();
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}//input.nextLine();
         	
-        	if(Sfactory == "polishCheckers") {
+			
+			System.out.println(Sfactory);
+        	if(Sfactory.equals("polishCheckers")) {
+        		System.out.println("Selected Polish checkers.\n");
         		factory = new PolishCheckersFactory();
         		checkers = new Checkers(factory);
         		board = checkers.getBoard();
-        		System.out.println("board size: " + board);
+        		if(board != null) {
+        			System.out.println("Board is not null\n");
+        		} else {
+        			System.out.println("Board is null.\n");
+        		}
+        		System.out.println("board size: " + board.getSize());
+        	} else {
+        		System.out.println("No factory selected: " + Sfactory + "\n");
         	}
         }
 
