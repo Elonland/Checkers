@@ -38,7 +38,7 @@ public class ServerTest {
 	@Before
 	public void setup() {
 		 //old x    y  new x     y      queen    isJump jumped[]
-		obj = "2 " + "2 " + "3 " + "3 " + "false " + "true " +  "4 " + "4 " + "false " + "6 " + "6 " + "false"; 
+		obj = "1 " + "0 " + "0 " + "1 " + "false " + "true " +  "4 " + "4 " + "false " + "6 " + "6 " + "false"; 
 		factory = "polishCheckers";
 	}
 	
@@ -157,7 +157,7 @@ public class ServerTest {
 			
 			
 			System.out.println("Writing to Server");
-			write.write(obj);
+			write.println(obj);
 			write.flush();
 			
 			
