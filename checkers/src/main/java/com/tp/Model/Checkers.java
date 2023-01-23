@@ -10,25 +10,47 @@ package com.tp.Model;
 public class Checkers {
 	
 	private Board board;
-	//private Ruleset rules;
+	private RuleSet movement;
 	private IGameState state;
 	
 	private static Checkers instance;
 	
-	public Checkers(ICheckersFactory factory) {
+	public void useFactory(ICheckersFactory factory) {
 		board = factory.createBoard();
 		state = factory.createState();
+		movement = factory.createRules();
 	}
 	
 	public void move(Move move, Player player) throws InvalidMoveException {
-			
+		if(move.before == null || move.after == null) {
+			throw new InvalidMoveException("Move cannot be null");
+		}
+		if(move.before.color != player || move.after.color != player) {
+			throw new InvalidMoveException("You can only move your pieces");
+		}
 		state.verifyPlayer(player);
-		//movement.verifyMove(move, board);
-		board.makeMove(move);
+		try {
+			movement.verifyMove(move, board);
+			board.makeMove(move);
+
+			if(board.getPieceCount(player.BLACK) == 0) {
+				state = new EndGame(this, player.WHITE);
+			}
+			if(board.getPieceCount(player.WHITE) == 0) {
+				state = new EndGame(this, player.BLACK);
+			}
+			
+			state.nextTurn();
+			
+		} catch (InvalidMoveException e) {
+			System.out.println(e);
+		}
+		
+		
 	}
 	
 	public void createInstance(ICheckersFactory factory) {
-		instance = new Checkers(factory);
+		//instance = new Checkers(factory);
 	}
 	
 	public Checkers getInstance() {

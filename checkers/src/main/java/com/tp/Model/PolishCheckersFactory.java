@@ -11,7 +11,6 @@ public class PolishCheckersFactory implements ICheckersFactory {
 
 	Checkers checkers;
 	Board board;
-	//Board board;
 	IGameState state;
 	@Override
 	public Board createBoard() {
@@ -26,8 +25,13 @@ public class PolishCheckersFactory implements ICheckersFactory {
 		return new WhiteTurn(checkers);
 	}
 	
+	@Override
 	public void setCheckers(Checkers checkers ) {
 		this.checkers = checkers;
+	}
+	
+	public RuleSet createRules() {
+		return new PolishRuleSet();
 	}
 
 }

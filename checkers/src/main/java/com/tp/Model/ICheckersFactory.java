@@ -11,5 +11,7 @@ public interface ICheckersFactory {
 
 	public Board createBoard();
 	public IGameState createState();
+	public RuleSet createRules();
+	public void setCheckers(Checkers checkers);
 
 }
