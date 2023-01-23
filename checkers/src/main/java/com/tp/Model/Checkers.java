@@ -15,12 +15,21 @@ public class Checkers {
 	
 	private static Checkers instance;
 	
+	/*
+	 * @param factory specific type of factory which will be used to create board state and ruleSet.
+	 */
 	public void useFactory(ICheckersFactory factory) {
 		board = factory.createBoard();
 		state = factory.createState();
 		movement = factory.createRules();
 	}
-	
+	/*
+	 * @param move contains information about made move by a player.
+	 * @param player contains information about color of the player.
+	 * 
+	 * Crucial part of this class it verifies if movement is correct 
+	 * and if everything is correct changes are applied.
+	 */
 	public void move(Move move, Player player) throws InvalidMoveException {
 		if(move.before == null || move.after == null) {
 			throw new InvalidMoveException("Move cannot be null");
@@ -48,11 +57,11 @@ public class Checkers {
 		
 		
 	}
-	
+	//NOT USED
 	public void createInstance(ICheckersFactory factory) {
 		//instance = new Checkers(factory);
 	}
-	
+	//NOT USED
 	public Checkers getInstance() {
 		return instance;
 	}

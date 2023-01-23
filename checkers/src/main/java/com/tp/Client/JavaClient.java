@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 /*
+ * @author Tobiasz Jędrzejek
  * Class reads and sends messages to server.
  * At the beginning it connects to the server and gets the input and output stream to the socket.
  * Next it reads the player number if it equals 1 then the player can decide what type of checkers to play.
@@ -20,6 +21,7 @@ import java.util.Scanner;
  * 
  * if server sends message to player 1 containing "Your move" player will be able to make moves.
  */
+
 public class JavaClient {
 
 	Socket clientSocket;
@@ -63,6 +65,9 @@ public class JavaClient {
 		shutdown();
 	}
 	
+	/*
+	 * Is responsible for configuring input and output.
+	 */
 	private void setup() throws IOException {
 		try {
 			clientSocket = new Socket("127.0.0.1" ,58901);
@@ -74,7 +79,9 @@ public class JavaClient {
 		write = new PrintWriter(new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream())));
 		playerInput = new Scanner(System.in);
 	}
-	
+	/*
+	 * Reads players input if he types QUIT loop breaks.
+	 */
 	private void run() throws IOException {
 		while(true) {
 			
@@ -107,7 +114,9 @@ public class JavaClient {
 			
 		}
 	}
-	
+	/*
+	 * Used to properly close all streams.
+	 */
 	private void shutdown() throws IOException {
 		reader.close();
 		write.close();
@@ -115,7 +124,7 @@ public class JavaClient {
 	}
 	
 	/*
-	 * Responding to input from client
+	 * Responding to input from client [NOT USED]
 	 */
 	private void readMessage() {
 		String message = playerInput.nextLine();
@@ -137,7 +146,11 @@ public class JavaClient {
 			System.out.println(message);
 		}
 	}
-	
+	/*
+	 * Only used for player1
+	 * He needs to wait for player2 to start the game.
+	 * Waits for server response.
+	 */
 	private void waitForOpponent() throws IOException {
 		while(opponentJoined == false) {
 				try {

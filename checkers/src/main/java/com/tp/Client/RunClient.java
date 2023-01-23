@@ -1,7 +1,11 @@
 package com.tp.Client;
 
 import java.io.IOException;
-
+/*
+ * @author Tobiasz Jędrzek
+ * Class used to run JavaClient class
+ * In order to run java application main must be static in Eclipse.
+ */
 public class RunClient {
 
 	static JavaClient client = new JavaClient();
