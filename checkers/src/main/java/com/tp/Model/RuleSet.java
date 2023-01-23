@@ -4,7 +4,6 @@ import java.lang.Math;
 /*
  * @author Tobiasz Jędrzejek
  * 
- * Chain of responsibility design pattern is used here.
  * RuleSet class contains all* the generic rules about checkers. (It should contain)
  */
 public abstract class RuleSet {
