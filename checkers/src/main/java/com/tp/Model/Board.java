@@ -46,9 +46,13 @@ public class Board {
     public void makeMove(Move move) {
         this.pieces.remove(move.before);
         addPiece(move.after);
-
+        
         if(move.isJump){
+        	
+        	System.out.println("Deleting jumped pieces");
+        	
             for(Piece piece : move.jumped){
+            	System.out.println("x: " + piece.X + " y: " + piece.Y);
                 this.pieces.remove(piece);
             }
         }
@@ -68,5 +72,5 @@ public class Board {
 		// TODO Auto-generated method stub
 		return 10;
 	}
-
+	
 }

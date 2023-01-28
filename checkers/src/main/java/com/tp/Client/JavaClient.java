@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Scanner;
 /*
  * @author Tobiasz Jędrzejek
@@ -36,6 +37,13 @@ public class JavaClient {
 	
 	Boolean opponentJoined = false;
 	
+	ArrayList<Pawn> pawns = null;
+	
+	Boolean boardFirstDrawn = false;
+	Boolean firstTryHuh = true;
+	
+	int boardSize = 0;
+	
 	public void main(String[] args) throws IOException {
 		setup();
 		
@@ -48,6 +56,7 @@ public class JavaClient {
 		
 		if(playerNumber.contains("1")) {
 			System.out.println("You are player number 1.");
+			
 			//Server sends message to player 1 to wait
 			respondServer();
 			
@@ -55,6 +64,7 @@ public class JavaClient {
 			String gameType = playerInput.nextLine();
 			write.println(gameType);
 			write.flush();
+			
 			waitForOpponent();
 		} else {
 			System.out.println("You are player number 2.\n Wait for first player to move.");
@@ -66,7 +76,7 @@ public class JavaClient {
 	}
 	
 	/*
-	 * Is responsible for configuring input and output.
+	 * Is responsible for configuring input and output and draws initial board.
 	 */
 	private void setup() throws IOException {
 		try {
@@ -85,13 +95,32 @@ public class JavaClient {
 	private void run() throws IOException {
 		while(true) {
 			
-			System.out.println("Opponent joined: " + opponentJoined );
+			if(playerNumber.contains("1") && firstTryHuh) {
+			
+				System.out.println("Opponent joined: " + opponentJoined );
+			}
+			
 			String command = null;
 			String[] subCommand = null;
+			
+			
+			
 			if(opponentJoined == true) {
+				
+				//To draw initial board using first message from server.
+				if(firstTryHuh == true) {
+					write.println("SHOWBOARD");
+					write.flush();
+					drawBoard();
+					firstTryHuh = false;
+				}
+				
+				
 				command = playerInput.nextLine();
 				System.out.println(command);
 				subCommand = command.split(" ");
+				
+				
 			}
 			
 			if(subCommand[0] == null) {
@@ -109,6 +138,7 @@ public class JavaClient {
 				//System.out.println(command.substring(5));
 				write.flush();
 				respondServer();
+				//waitForOtherPlayer();
 				
 			}
 			
@@ -142,6 +172,11 @@ public class JavaClient {
 			if(message.substring(8).equals("Your move")) {
 				opponentJoined = true;
 			}
+		} else if(message.equals("Correct move")) {
+			//Draw board if move was correct
+			
+			//drawBoard();
+			updateBoard();
 		} else if(!message.equals("GOOD")){
 			System.out.println(message);
 		}
@@ -164,5 +199,215 @@ public class JavaClient {
 				}
 			}
 		}
+	
+	private void drawBoard() throws IOException {
+		
+		
+		if(boardFirstDrawn == false) {
+			
+			System.out.println("Drawing board... ");
+			String details = reader.readLine();
+			String[] detailsArray = details.split(" ");
+			System.out.println(details);
+			
+			//System.out.println("Length of the command: " + detailsArray.length);
+			
+			//SIZE 25 PIECES WHITE BLACK
+			int numberOfPieces = (detailsArray.length - 3) / 3;
+		
+			boardSize = Integer.parseInt(detailsArray[1]);
+		
+			pawns = new ArrayList<Pawn>();
+			int j = 0;
+			
+			for(int i = 0; i < numberOfPieces; i++) {
+				
+				int x = Integer.parseInt(detailsArray[j + 3]); 
+				int y = Integer.parseInt(detailsArray[j + 4]);
+				//System.out.println("x: " + x + " y: " + y);
+				String color = detailsArray[j + 5];
+				Pawn pawn = new Pawn(x, y, false, color);
+				pawns.add(pawn);
+				j += 3;
+			}
+			
+			boardFirstDrawn = true;
+		} /*else {
+			//pobieram x y queen color i zmieniam dane w tablicy
+			
+			int numberOfJumped = (detailsArray.length - 6) / 2;
+			//int[] xTab = new int[numberOfJumped];
+			//int[] yTab = new int[numberOfJumped];
+			
+			//getting positions of old pawn and the new position of said pawn.
+			int xOld = Integer.parseInt(detailsArray[0]);
+			int yOld = Integer.parseInt(detailsArray[1]);
+			int xNew = Integer.parseInt(detailsArray[2]);
+			int yNew = Integer.parseInt(detailsArray[3]);
+			
+			//if pawn at new position is a queen.
+			boolean queen = Boolean.parseBoolean(detailsArray[4]);
+			//color of new pawn.
+			String color = detailsArray[5];
+			
+			//color of jumped pieces.
+			String colorJumped;
+			
+			//determine what color they are.
+			if(color == "WHITE") {
+				colorJumped = "BLACK";
+			} else {
+				colorJumped = "WHITE";
+			}
+				
+			//jumped pieces
+			int k = 0;
+			for( int j = 0;  j < numberOfJumped; j++) {
+				
+				//coordinates of piece to delete.
+				int xDel = Integer.parseInt(detailsArray[k + 6]);
+				int yDel = Integer.parseInt(detailsArray[k + 7]);
+				
+				//go to hell with efficiency. Looking for pawn to obliterate.
+				for(int i = 0; i < pawns.size(); i++) {
+					Pawn pawn = pawns.get(i);
+					
+					//Obliterate only once because we aren't that greedy.
+					if(pawn.getX() == xDel && pawn.getY() == yDel && pawn.color.equals(colorJumped)) {
+						System.out.println("Deleting pawn");
+						pawns.remove(pawn);
+						break;
+					}
+					
+				}
+				k += 2;
+			}
+			
+			//go to hell with efficiency. Looking for old useless pawn to obliterate.
+			for(int i = 0; i < pawns.size(); i++) {
+				Pawn pawn = pawns.get(i);
+				
+				//if you found then get out of here.
+				if(pawn.getX() == xOld && pawn.getY() == yOld && pawn.color.equals(color)) {
+					System.out.println("Deleting old pawn");
+					pawns.remove(pawn);
+					break;
+				}
+				
+			}
+
+			//Adding pawn in new position.
+			Pawn pawn = new Pawn(xNew, yNew, queen, color);
+			pawns.add(pawn);
+			
+		}
+		*/
+		drawBoardDetails(boardSize);
+		
 	}
+	
+	private void drawBoardDetails(int boardSize) {
+		System.out.println("Preparing to draw this: " + boardSize);
+		for(int i = 0; i < boardSize; i++) {
+			System.out.print("_");
+		}
+		
+		System.out.print("\n");
+		
+		for(int y1 = boardSize - 1; y1 >= 0; y1--) {
+			
+			String line = "";
+				for(int x1 = 0; x1 < boardSize; x1++) {
+					
+					
+					boolean found = false;
+					for(int i = 0; i < pawns.size(); i++) {
+						Pawn pawn = pawns.get(i);
+						if( pawn.getX() == x1 && pawn.y == y1 && pawn.queen == false && pawn.color.equals("BLACK")) {
+							line += "X";
+							found = true;
+							break;
+						} if(pawn.getX() == x1 && pawn.y == y1 && pawn.queen == true && pawn.color.equals("BLACK")) {
+							line += "B";
+							found = true;
+							break;
+						} if(pawn.getX() == x1 && pawn.y == y1 && pawn.queen == false && pawn.color.equals("WHITE")) {
+							line += "O";
+							found = true;
+							break;
+						} if(pawn.getX() == x1 && pawn.y == y1 && pawn.queen == true && pawn.color.equals("WHITE")) {
+							line += "W";
+							found = true;
+							break;
+						}
+						
+					}
+					
+					if(found == false) {
+						line += " ";
+					}
+					
+					
+					
+					
+				
+				}	
+				System.out.println(line);
+				//System.out.print("\n");
+		
+			}
+		for(int i = 0; i < boardSize; i++) {
+			System.out.print("_");
+		}
+		System.out.print("\n");
+	}
+	
+	public void updateBoard() throws IOException {
+		
+		String board;
+		
+		write.println("UPDATEBOARD");
+		write.flush();
+		
+		board = reader.readLine();
+		String[] boardTab = board.split(" ");
+		int numberOfPieces = boardTab.length / 4;
+		
+		ArrayList<Pawn> pawnsTemp = new ArrayList<Pawn>();
+		
+		System.out.println("numberOfPieces: " + numberOfPieces);
+		
+		int k = 0;
+		for(int i = 0; i < numberOfPieces; i++) {
+			
+			int x = Integer.parseInt(boardTab[k]);
+			int y = Integer.parseInt(boardTab[k + 1]);
+			boolean queen = Boolean.parseBoolean(boardTab[k + 2]);
+			String color = boardTab[k + 3];
+			
+			Pawn pawn = new Pawn(x, y, queen, color);
+			//System.out.println("x: " + x + " y: " + y + " color: " + color);
+			pawnsTemp.add(pawn);
+			
+			k += 4;
+		}
+		
+		pawns = pawnsTemp;
+		
+		drawBoardDetails(boardSize);
+	
+	}
+	
+	public void waitForOtherPlayer() throws IOException {
+		write.println("MOVED " + playerNumber);
+		write.flush();
+		String message = reader.readLine();
+		
+		if( !message.equals("MOVED")) {
+			System.out.println("That wasn't supposed to happen");
+		}
+	}
+	
+	
+}
 
