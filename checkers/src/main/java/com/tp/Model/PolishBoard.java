@@ -30,6 +30,13 @@ public class PolishBoard extends Board {
 	}
 	*/
 
+	//Adding to board pieces manually.
+	public PolishBoard(Board board) {
+		for(Piece piece : board.getPieces()){
+            this.addPiece(new Piece(piece.X, piece.Y,piece.queen, piece.color));
+        }
+	}
+
 	public int getSize() {
 		return 10;
 	}

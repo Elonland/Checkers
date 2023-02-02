@@ -16,3 +16,5 @@ public class RunClient {
 	}
 
 }
+
+//MOVE x y x y queen jumped x y x y

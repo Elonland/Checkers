@@ -32,8 +32,10 @@ import javax.json.JsonObject;
 
 import com.tp.Client.Pawn;
 import com.tp.Model.Board;
+import com.tp.Model.CanadianCheckersFactory;
 import com.tp.Model.Checkers;
 import com.tp.Model.EndGame;
+import com.tp.Model.EnglishCheckersFactory;
 import com.tp.Model.ICheckersFactory;
 import com.tp.Model.InvalidMoveException;
 import com.tp.Model.Move;
@@ -144,7 +146,7 @@ class Game {
         private void processCommands() throws IOException {
             while (true) {
                 var command = reader.readLine();
-                System.out.println("Command: " + command);
+                System.out.println("Command: " + command + " " + mark);
                 if (command.startsWith("QUIT")) {
                     return;
                 }
@@ -302,7 +304,8 @@ class Game {
 				if(isJump == true) {
 					//System.out.println("isJump is true");
 					
-					captured = new Piece[(moves.length - 7) / 3];
+					try {
+						captured = new Piece[(moves.length - 7) / 3];
 					int j = 0;
 					for(int i = 7; i < moves.length; i += 3) {
 					
@@ -316,6 +319,12 @@ class Game {
 						j++;
 					
 					}
+					} catch(ArrayIndexOutOfBoundsException e) {
+						System.out.println("Command wasn't written right");
+						output.println("WRONG COMMAND");
+					}
+					
+					
 				
 				}
 				if(oldPiece == null) {
@@ -332,11 +341,15 @@ class Game {
 					printAllPieces();
 					output.println("Correct move");
 					
+					//Sending to other player request to draw board.
+					opponent.output.println("UPDATE");
+					if(mark == '1') {
+						opponent.output.println("WHITEMOVED");
+					}
 					//sendMoveInfo(move, board);
 					
 				} catch (InvalidMoveException e) {
 					
-					e.printStackTrace();
 					output.println(e);
 				}
         	//}
@@ -365,6 +378,7 @@ class Game {
 			
 			System.out.println(Sfactory);
         	if(Sfactory.equals("polishCheckers")) {
+        		
         		System.out.println("Selected Polish checkers.\n");
         		checkers = new Checkers();
         		factory = new PolishCheckersFactory();
@@ -379,6 +393,41 @@ class Game {
         			System.out.println("Board is null.\n");
         		}
         		System.out.println("board size: " + board.getSize());
+        		
+        	} else if(Sfactory.equals("canadianCheckers")) { 
+        		
+        		System.out.println("Selected Canadian checkers.\n");
+        		checkers = new Checkers();
+        		factory = new CanadianCheckersFactory();
+        		factory.setCheckers(checkers);
+        		checkers.useFactory(factory);
+        		
+        		board = checkers.getBoard();
+        		
+        		if(board != null) {
+        			System.out.println("Board is not null\n");
+        		} else {
+        			System.out.println("Board is null.\n");
+        		}
+        		System.out.println("board size: " + board.getSize());
+        		
+        	} else if(Sfactory.equals("englishCheckers")) { 
+        		
+        		System.out.println("Selected English checkers.\n");
+        		checkers = new Checkers();
+        		factory = new EnglishCheckersFactory();
+        		factory.setCheckers(checkers);
+        		checkers.useFactory(factory);
+        		
+        		board = checkers.getBoard();
+        		
+        		if(board != null) {
+        			System.out.println("Board is not null\n");
+        		} else {
+        			System.out.println("Board is null.\n");
+        		}
+        		System.out.println("board size: " + board.getSize());
+        		
         	} else {
         		System.out.println("No factory selected: " + Sfactory + "\n");
         	}

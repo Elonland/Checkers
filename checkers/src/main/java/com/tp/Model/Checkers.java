@@ -52,7 +52,7 @@ public class Checkers {
 			state.nextTurn();
 			
 		} catch (InvalidMoveException e) {
-			System.out.println(e);
+			throw e;
 		}
 		
 		

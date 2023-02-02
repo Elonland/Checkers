@@ -60,7 +60,7 @@ public class JavaClient {
 			//Server sends message to player 1 to wait
 			respondServer();
 			
-			System.out.println("Select game type.\n Available: polishCheckers");
+			System.out.println("Select game type.\n Available: polishCheckers, englishCheckers, canadianCheckers");
 			String gameType = playerInput.nextLine();
 			write.println(gameType);
 			write.flush();
@@ -101,7 +101,7 @@ public class JavaClient {
 			}
 			
 			String command = null;
-			String[] subCommand = null;
+			String[] subCommand = {" "};
 			
 			
 			
@@ -114,7 +114,6 @@ public class JavaClient {
 					drawBoard();
 					firstTryHuh = false;
 				}
-				
 				
 				command = playerInput.nextLine();
 				System.out.println(command);
@@ -141,6 +140,11 @@ public class JavaClient {
 				//waitForOtherPlayer();
 				
 			}
+			
+			if(subCommand[0].equals("SHOW")) {
+				respondServer();
+			}
+			
 			
 		}
 	}
@@ -177,6 +181,9 @@ public class JavaClient {
 			
 			//drawBoard();
 			updateBoard();
+		} else if(message.equals("UPDATE")) { 
+			updateBoard();
+			
 		} else if(!message.equals("GOOD")){
 			System.out.println(message);
 		}
@@ -307,7 +314,14 @@ public class JavaClient {
 	}
 	
 	private void drawBoardDetails(int boardSize) {
-		System.out.println("Preparing to draw this: " + boardSize);
+		//System.out.println("Preparing to draw this: " + boardSize);
+		
+		
+		System.out.print("  ");
+		for(int i = 0; i < boardSize; i++) {
+			System.out.print(i);
+		}
+		System.out.print("\n  ");
 		for(int i = 0; i < boardSize; i++) {
 			System.out.print("_");
 		}
@@ -315,7 +329,7 @@ public class JavaClient {
 		System.out.print("\n");
 		
 		for(int y1 = boardSize - 1; y1 >= 0; y1--) {
-			
+			System.out.print(y1 + " ");
 			String line = "";
 				for(int x1 = 0; x1 < boardSize; x1++) {
 					
@@ -356,6 +370,8 @@ public class JavaClient {
 				//System.out.print("\n");
 		
 			}
+		
+		System.out.print("  ");
 		for(int i = 0; i < boardSize; i++) {
 			System.out.print("_");
 		}
